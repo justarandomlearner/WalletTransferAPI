@@ -1,9 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gin-gonic/gin"
+	account "github.com/justarandomlearner/WalletTransferAPI/internal/handlers"
 )
 
 func main() {
-	fmt.Println("hi")
+	g := gin.Default()
+
+	g.GET("/accountinfo/:accUUID", account.AccountBalance)
+
+	g.Run(":12345")
 }
