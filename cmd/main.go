@@ -1,21 +1,16 @@
 package main
 
 import (
-	"os"
-
 	"github.com/gin-gonic/gin"
-	account "github.com/justarandomlearner/WalletTransferAPI/internal/handlers"
+	"github.com/justarandomlearner/WalletTransferAPI/internal/handlers"
 )
 
 func main() {
 	g := gin.Default()
 
-	g.GET("/accountinfo/:accUUID", account.AccountBalance)
+	g.GET("/accountinfo/:accountID", handlers.AccountBalance)
 
-	port := os.Getenv("API_PORT")
-	if port == "" {
-		port = "3000"
-	}
+	g.POST("/transfer/", handlers.TransferHandler)
 
-	g.Run(":" + port)
+	g.Run(":3000")
 }

@@ -7,13 +7,15 @@ services:
         condition: service_healthy
     ports:
       - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://walletapi:p0stgr3s@db:5432/walletapi
   db:
     image: postgres:15.2-alpine3.17
     environment:
       POSTGRES_PASSWORD: p0stgr3s
       POSTGRES_USER: walletapi
     volumes:
-      - ./internal/seed.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./internal/repository/seed.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - 5432:5432
     healthcheck:

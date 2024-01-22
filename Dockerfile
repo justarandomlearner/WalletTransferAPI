@@ -1,11 +1,12 @@
-FROM golang:1.21.5-alpine3.17 as base
-WORKDIR /src/walletAPI
-ADD . . 
+FROM golang:1.21.5-alpine3.17 as builder
+WORKDIR /src
+COPY go.* ./
+COPY ./cmd ./cmd
+COPY ./internal ./internal
 RUN go mod download
-RUN go build -o walletAPI ./cmd
+RUN go build -o walletAPI ./cmd/main.go
 
 FROM alpine:3.17 as binary
-WORKDIR /src/app
-COPY --from=base /src/walletAPI/walletAPI .
+COPY --from=builder /src/walletAPI .
 EXPOSE 3000
-CMD ["/src/app/walletAPI"]
+CMD ["/walletAPI"]
