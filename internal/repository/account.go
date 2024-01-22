@@ -17,9 +17,9 @@ type AccountRepository interface {
 	OpenTransaction() (cancelContext context.CancelFunc, err error)
 	Commit() error
 	Rollback() error
-	SelectBalanceByUserID(userID uuid.UUID) (model.AccountBalance, error)
-	RemoveFromBalanceByUserID(amount float64, userID uuid.UUID) error
-	AddOnBalanceByUserID(amount float64, userID uuid.UUID) error
+	SelectBalanceByAccountID(accountID uuid.UUID) (model.AccountBalance, error)
+	RemoveFromBalanceByAccountID(amount float64, accountID uuid.UUID) error
+	AddOnBalanceByAccountID(amount float64, accountID uuid.UUID) error
 }
 
 const transactionTimeout = 20 * time.Second
@@ -59,7 +59,7 @@ func (repo *PostgresRepository) Rollback() error {
 	return repo.tx.Rollback(repo.ctx)
 }
 
-func (repo *PostgresRepository) SelectBalanceByUserID(accID uuid.UUID) (model.AccountBalance, error) {
+func (repo *PostgresRepository) SelectBalanceByAccountID(accID uuid.UUID) (model.AccountBalance, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -79,24 +79,24 @@ func (repo *PostgresRepository) SelectBalanceByUserID(accID uuid.UUID) (model.Ac
 	return balance, nil
 }
 
-func (repo *PostgresRepository) RemoveFromBalanceByUserID(amount float64, userID uuid.UUID) error {
+func (repo *PostgresRepository) RemoveFromBalanceByAccountID(amount float64, accountID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(repo.ctx, defaultTimeout)
 	defer cancel()
 
 	sql := "UPDATE accounts SET amount = amount - $1 WHERE account_id = $2"
 
-	_, err := repo.tx.Exec(ctx, sql, amount, userID)
+	_, err := repo.tx.Exec(ctx, sql, amount, accountID)
 
 	return err
 }
 
-func (repo *PostgresRepository) AddOnBalanceByUserID(amount float64, userID uuid.UUID) error {
+func (repo *PostgresRepository) AddOnBalanceByAccountID(amount float64, accountID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(repo.ctx, defaultTimeout)
 	defer cancel()
 
 	sql := "UPDATE accounts SET amount = amount + $1 WHERE account_id = $2"
 
-	_, err := repo.tx.Exec(ctx, sql, amount, userID)
+	_, err := repo.tx.Exec(ctx, sql, amount, accountID)
 
 	return err
 }

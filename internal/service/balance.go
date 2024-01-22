@@ -15,7 +15,7 @@ func NewAccountBalanceService(repo repository.AccountRepository) AccountBalanceS
 }
 
 func (s *AccountBalanceService) AccountBalance(accountID uuid.UUID) (*model.AccountBalance, error) {
-	balance, err := s.Repository.SelectBalanceByUserID(accountID)
+	balance, err := s.Repository.SelectBalanceByAccountID(accountID)
 	if err != nil {
 		return nil, err
 	}

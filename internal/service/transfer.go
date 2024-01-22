@@ -24,12 +24,12 @@ func (s *TransferService) Transfer(amount float64, debtorID, beneficiaryID uuid.
 		return err
 	}
 
-	err = s.removeFromBalance(amount, debtorID)
+	err = s.decreaseAccountBalance(amount, debtorID)
 	if err != nil {
 		return err
 	}
 
-	err = s.topUpBalance(amount, beneficiaryID)
+	err = s.increaseAccountBalance(amount, beneficiaryID)
 	if err != nil {
 		s.Repository.Rollback()
 		return err
@@ -39,8 +39,8 @@ func (s *TransferService) Transfer(amount float64, debtorID, beneficiaryID uuid.
 	return nil
 }
 
-func (s *TransferService) removeFromBalance(amount float64, userID uuid.UUID) error {
-	debtorBalance, err := s.Repository.SelectBalanceByUserID(userID)
+func (s *TransferService) decreaseAccountBalance(amount float64, accountID uuid.UUID) error {
+	debtorBalance, err := s.Repository.SelectBalanceByAccountID(accountID)
 	if err != nil {
 		return errors.New(errors.CodeInternalDatabaseError, "error on selecting balance", err)
 	}
@@ -49,18 +49,18 @@ func (s *TransferService) removeFromBalance(amount float64, userID uuid.UUID) er
 		return errors.New(errors.CodeInsufficientBalance, "insufficient balance on debtor account", err)
 	}
 
-	err = s.Repository.RemoveFromBalanceByUserID(amount, userID)
+	err = s.Repository.RemoveFromBalanceByAccountID(amount, accountID)
 
 	return err
 }
 
-func (s *TransferService) topUpBalance(amount float64, userID uuid.UUID) error {
-	_, err := s.Repository.SelectBalanceByUserID(userID)
+func (s *TransferService) increaseAccountBalance(amount float64, accountID uuid.UUID) error {
+	_, err := s.Repository.SelectBalanceByAccountID(accountID)
 	if err != nil {
 		return errors.New(errors.CodeInternalDatabaseError, "error on selecting balance", err)
 	}
 
-	err = s.Repository.AddOnBalanceByUserID(amount, userID)
+	err = s.Repository.AddOnBalanceByAccountID(amount, accountID)
 
 	return err
 }
