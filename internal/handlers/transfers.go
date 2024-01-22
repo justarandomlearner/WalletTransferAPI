@@ -20,7 +20,7 @@ type transferPayload struct {
 func TransferHandler(ctx *gin.Context) {
 	conn, err := db.CreateConnection()
 	if err != nil {
-		// responseFromError(err, w)
+		ctx.Status(errors.ResponseFromError(err))
 		return
 	}
 	defer conn.Close()
@@ -60,29 +60,6 @@ func TransferHandler(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusCreated)
-}
-
-func Bolotinha(ctx *gin.Context) {
-	// var post post.Post
-
-	// outerContext, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-
-	// defer cancel()
-
-	// if err := ctx.BindJSON(&post); err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, gin.H{
-	// 		"error": err.Error(),
-	// 	})
-	// 	return
-	// }
-
-	// if err := service.Create(outerContext, post); err != nil {
-	// 	ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-	// 		"error": err.Error(),
-	// 	})
-	// 	return
-	// }
-
 }
 
 func validateTransfer(t transferPayload) error {
