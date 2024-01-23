@@ -8,7 +8,7 @@ import (
 func main() {
 	g := gin.Default()
 
-	g.GET("/accountinfo/:accountID", handlers.AccountBalance)
+	g.GET("/walletinfo/:walletID", handlers.WalletBalance)
 
 	g.POST("/transfer/", handlers.TransferHandler)
 

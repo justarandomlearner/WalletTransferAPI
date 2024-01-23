@@ -11,10 +11,10 @@ import (
 	"github.com/justarandomlearner/WalletTransferAPI/internal/service"
 )
 
-func AccountBalance(ctx *gin.Context) {
-	accIdStr := ctx.Param("accountID")
+func WalletBalance(ctx *gin.Context) {
+	walletIdStr := ctx.Param("walletID")
 
-	accUUID, err := uuid.Parse(accIdStr)
+	walletUUID, err := uuid.Parse(walletIdStr)
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
 		return
@@ -29,9 +29,9 @@ func AccountBalance(ctx *gin.Context) {
 
 	repo := &repository.PostgresRepository{Conn: conn}
 
-	service := service.NewAccountBalanceService(repo)
+	service := service.NewWalletBalanceService(repo)
 
-	balance, err := service.AccountBalance(accUUID)
+	balance, err := service.WalletBalance(walletUUID)
 	if err != nil {
 		ctx.Status(errors.ResponseFromError(err))
 		return

@@ -6,16 +6,16 @@ import (
 	"github.com/justarandomlearner/WalletTransferAPI/internal/repository"
 )
 
-type AccountBalanceService struct {
-	Repository repository.AccountRepository
+type walletBalanceService struct {
+	Repository repository.WalletRepository
 }
 
-func NewAccountBalanceService(repo repository.AccountRepository) AccountBalanceService {
-	return AccountBalanceService{Repository: repo}
+func NewWalletBalanceService(repo repository.WalletRepository) walletBalanceService {
+	return walletBalanceService{Repository: repo}
 }
 
-func (s *AccountBalanceService) AccountBalance(accountID uuid.UUID) (*model.AccountBalance, error) {
-	balance, err := s.Repository.SelectBalanceByAccountID(accountID)
+func (s *walletBalanceService) WalletBalance(walletID uuid.UUID) (*model.WalletBalance, error) {
+	balance, err := s.Repository.SelectBalanceByWalletID(walletID)
 	if err != nil {
 		return nil, err
 	}

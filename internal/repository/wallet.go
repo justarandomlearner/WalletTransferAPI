@@ -13,13 +13,13 @@ import (
 	"github.com/justarandomlearner/WalletTransferAPI/internal/model"
 )
 
-type AccountRepository interface {
+type WalletRepository interface {
 	OpenTransaction() (cancelContext context.CancelFunc, err error)
 	Commit() error
 	Rollback() error
-	SelectBalanceByAccountID(accountID uuid.UUID) (model.AccountBalance, error)
-	RemoveFromBalanceByAccountID(amount float64, accountID uuid.UUID) error
-	AddOnBalanceByAccountID(amount float64, accountID uuid.UUID) error
+	SelectBalanceByWalletID(walletID uuid.UUID) (model.WalletBalance, error)
+	RemoveFromBalanceByWalletID(amount float64, walletID uuid.UUID) error
+	AddOnBalanceByWalletID(amount float64, walletID uuid.UUID) error
 }
 
 const transactionTimeout = 20 * time.Second
@@ -59,44 +59,44 @@ func (repo *PostgresRepository) Rollback() error {
 	return repo.tx.Rollback(repo.ctx)
 }
 
-func (repo *PostgresRepository) SelectBalanceByAccountID(accID uuid.UUID) (model.AccountBalance, error) {
+func (repo *PostgresRepository) SelectBalanceByWalletID(walletID uuid.UUID) (model.WalletBalance, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	sql := "SELECT id, amount, account_id FROM accounts WHERE account_id = $1"
+	query := "SELECT id, amount, user_id FROM wallet WHERE id = $1"
 
-	row := repo.Conn.QueryRow(ctx, sql, accID)
+	row := repo.Conn.QueryRow(ctx, query, walletID)
 
-	var balance model.AccountBalance
+	var balance model.WalletBalance
 	if err := row.Scan(
 		&balance.ID,
 		&balance.Amount,
-		&balance.AccountID,
+		&balance.UserID,
 	); err != nil {
-		return model.AccountBalance{}, err
+		return model.WalletBalance{}, err
 	}
 
 	return balance, nil
 }
 
-func (repo *PostgresRepository) RemoveFromBalanceByAccountID(amount float64, accountID uuid.UUID) error {
+func (repo *PostgresRepository) RemoveFromBalanceByWalletID(amount float64, walletID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(repo.ctx, defaultTimeout)
 	defer cancel()
 
-	sql := "UPDATE accounts SET amount = amount - $1 WHERE account_id = $2"
+	sql := "UPDATE wallet SET amount = amount - $1 WHERE id = $2"
 
-	_, err := repo.tx.Exec(ctx, sql, amount, accountID)
+	_, err := repo.tx.Exec(ctx, sql, amount, walletID)
 
 	return err
 }
 
-func (repo *PostgresRepository) AddOnBalanceByAccountID(amount float64, accountID uuid.UUID) error {
+func (repo *PostgresRepository) AddOnBalanceByWalletID(amount float64, walletID uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(repo.ctx, defaultTimeout)
 	defer cancel()
 
-	sql := "UPDATE accounts SET amount = amount + $1 WHERE account_id = $2"
+	sql := "UPDATE wallet SET amount = amount + $1 WHERE id = $2"
 
-	_, err := repo.tx.Exec(ctx, sql, amount, accountID)
+	_, err := repo.tx.Exec(ctx, sql, amount, walletID)
 
 	return err
 }

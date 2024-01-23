@@ -25,19 +25,19 @@ func New(code int, message string, err error) Error {
 
 var ErrCodeInvalidAmountToTransfer = New(
 	CodeInvalidAmountToTransfer,
-	"Invalid amount to transfer, expected greater than zero",
+	"invalid amount to transfer, expected greater than zero",
 	nil,
 )
 
 var ErrCodeSameDebtorAndBeneficiary = New(
 	CodeSameDebtorAndBeneficiary,
-	"Cannot transfer to its own account",
+	"cannot transfer to its own wallet",
 	nil,
 )
 
 var ErrCodeMissingPart = New(
 	CodeMissingPart,
-	"Missing beneficiary or debtor",
+	"missing beneficiary or debtor",
 	nil,
 )
 

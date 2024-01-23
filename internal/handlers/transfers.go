@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/justarandomlearner/WalletTransferAPI/internal/db"
 	"github.com/justarandomlearner/WalletTransferAPI/internal/lib/errors"
+	"github.com/justarandomlearner/WalletTransferAPI/internal/repository"
 	"github.com/justarandomlearner/WalletTransferAPI/internal/service"
 )
 
@@ -18,48 +19,66 @@ type transferPayload struct {
 }
 
 func TransferHandler(ctx *gin.Context) {
+	var tr transferPayload
+
+	decoder := json.NewDecoder(ctx.Request.Body)
+	if err := decoder.Decode(&tr); err != nil {
+		ctx.JSON(errors.ResponseFromError(err), gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := validateTransfer(tr); err != nil {
+		ctx.JSON(errors.ResponseFromError(err), gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	beneficiaryID, err := uuid.Parse(tr.BeneficiaryID)
+	if err != nil {
+		ctx.JSON(errors.ResponseFromError(err), gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	conn, err := db.CreateConnection()
 	if err != nil {
 		ctx.Status(errors.ResponseFromError(err))
 		return
 	}
+
 	defer conn.Close()
 
-	var tr transferPayload
-	decoder := json.NewDecoder(ctx.Request.Body)
-	if err := decoder.Decode(&tr); err != nil {
-		ctx.Status(errors.ResponseFromError(err))
-		return
-	}
+	repo := &repository.PostgresRepository{Conn: conn}
 
-	if err := validateTransfer(tr); err != nil {
-		ctx.Status(errors.ResponseFromError(err))
-		return
-	}
+	transferService := service.NewTransferService(repo)
 
-	transferService := service.NewTransferService()
 	debtorID, err := uuid.Parse(tr.DebtorID)
 	if err != nil {
-		ctx.Status(errors.ResponseFromError(err))
+		ctx.JSON(errors.ResponseFromError(err), gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
-	beneficiaryID, err := uuid.Parse(tr.BeneficiaryID)
-	if err != nil {
-		ctx.Status(errors.ResponseFromError(err))
-		return
-	}
+
 	err = transferService.Transfer(
 		tr.Amount,
 		debtorID,
 		beneficiaryID,
 	)
-
 	if err != nil {
-		ctx.Status(errors.ResponseFromError(err))
+		ctx.JSON(errors.ResponseFromError(err), gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "transfer succeeded",
+	})
 }
 
 func validateTransfer(t transferPayload) error {

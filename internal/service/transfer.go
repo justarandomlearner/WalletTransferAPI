@@ -2,34 +2,31 @@ package service
 
 import (
 	"github.com/google/uuid"
-	"github.com/justarandomlearner/WalletTransferAPI/internal/db"
 	"github.com/justarandomlearner/WalletTransferAPI/internal/lib/errors"
 	"github.com/justarandomlearner/WalletTransferAPI/internal/repository"
 )
 
-type TransferService struct {
-	Repository repository.AccountRepository
+type transferService struct {
+	Repository repository.WalletRepository
 }
 
-func NewTransferService() TransferService {
-	conn, _ := db.CreateConnection()
-	repo := repository.PostgresRepository{Conn: conn}
-	return TransferService{Repository: &repo}
+func NewTransferService(repo repository.WalletRepository) transferService {
+	return transferService{Repository: repo}
 }
 
-func (s *TransferService) Transfer(amount float64, debtorID, beneficiaryID uuid.UUID) error {
+func (s *transferService) Transfer(amount float64, debtorID, beneficiaryID uuid.UUID) error {
 	cancel, err := s.Repository.OpenTransaction()
 	defer cancel()
 	if err != nil {
 		return err
 	}
 
-	err = s.decreaseAccountBalance(amount, debtorID)
+	err = s.decreaseWalletBalance(amount, debtorID)
 	if err != nil {
 		return err
 	}
 
-	err = s.increaseAccountBalance(amount, beneficiaryID)
+	err = s.increaseWalletBalance(amount, beneficiaryID)
 	if err != nil {
 		s.Repository.Rollback()
 		return err
@@ -39,28 +36,28 @@ func (s *TransferService) Transfer(amount float64, debtorID, beneficiaryID uuid.
 	return nil
 }
 
-func (s *TransferService) decreaseAccountBalance(amount float64, accountID uuid.UUID) error {
-	debtorBalance, err := s.Repository.SelectBalanceByAccountID(accountID)
+func (s *transferService) decreaseWalletBalance(amount float64, walletID uuid.UUID) error {
+	debtorBalance, err := s.Repository.SelectBalanceByWalletID(walletID)
 	if err != nil {
 		return errors.New(errors.CodeInternalDatabaseError, "error on selecting balance", err)
 	}
 
 	if debtorBalance.Amount-amount < 0 {
-		return errors.New(errors.CodeInsufficientBalance, "insufficient balance on debtor account", err)
+		return errors.New(errors.CodeInsufficientBalance, "insufficient balance on debtor wallet", err)
 	}
 
-	err = s.Repository.RemoveFromBalanceByAccountID(amount, accountID)
+	err = s.Repository.RemoveFromBalanceByWalletID(amount, walletID)
 
 	return err
 }
 
-func (s *TransferService) increaseAccountBalance(amount float64, accountID uuid.UUID) error {
-	_, err := s.Repository.SelectBalanceByAccountID(accountID)
+func (s *transferService) increaseWalletBalance(amount float64, walletID uuid.UUID) error {
+	_, err := s.Repository.SelectBalanceByWalletID(walletID)
 	if err != nil {
 		return errors.New(errors.CodeInternalDatabaseError, "error on selecting balance", err)
 	}
 
-	err = s.Repository.AddOnBalanceByAccountID(amount, accountID)
+	err = s.Repository.AddOnBalanceByWalletID(amount, walletID)
 
 	return err
 }
