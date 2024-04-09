@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -22,6 +23,12 @@ func New(code int, message string, err error) Error {
 		err:     err,
 	}
 }
+
+var ErrCodeInsufficientBalance = New(
+	CodeInsufficientBalance,
+	"debtor's account doesn't have enough money",
+	nil,
+)
 
 var ErrCodeInvalidAmountToTransfer = New(
 	CodeInvalidAmountToTransfer,
@@ -50,6 +57,7 @@ func ResponseFromError(err error) int {
 
 	switch e.Code {
 	case CodeInsufficientBalance:
+		fmt.Println("ENTROU NO CASO DO SWITCH EM QUE e.Code == CodeInsufficientBalance")
 		return http.StatusExpectationFailed
 	case CodeSameDebtorAndBeneficiary:
 		return http.StatusExpectationFailed

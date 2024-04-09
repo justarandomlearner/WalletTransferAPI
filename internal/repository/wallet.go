@@ -83,9 +83,9 @@ func (repo *PostgresRepository) RemoveFromBalanceByWalletID(amount float64, wall
 	ctx, cancel := context.WithTimeout(repo.ctx, defaultTimeout)
 	defer cancel()
 
-	sql := "UPDATE wallet SET amount = amount - $1 WHERE id = $2"
+	query := "UPDATE wallet SET amount = amount - $1 WHERE id = $2"
 
-	_, err := repo.tx.Exec(ctx, sql, amount, walletID)
+	_, err := repo.tx.Exec(ctx, query, amount, walletID)
 
 	return err
 }
@@ -94,9 +94,9 @@ func (repo *PostgresRepository) AddOnBalanceByWalletID(amount float64, walletID 
 	ctx, cancel := context.WithTimeout(repo.ctx, defaultTimeout)
 	defer cancel()
 
-	sql := "UPDATE wallet SET amount = amount + $1 WHERE id = $2"
+	query := "UPDATE wallet SET amount = amount + $1 WHERE id = $2"
 
-	_, err := repo.tx.Exec(ctx, sql, amount, walletID)
+	_, err := repo.tx.Exec(ctx, query, amount, walletID)
 
 	return err
 }

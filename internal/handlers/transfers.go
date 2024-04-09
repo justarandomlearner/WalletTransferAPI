@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -69,7 +70,9 @@ func TransferHandler(ctx *gin.Context) {
 		debtorID,
 		beneficiaryID,
 	)
+	fmt.Printf("ERRO ENVIADO POR transferService.Transfer É: %v\n", err)
 	if err != nil {
+		fmt.Println("ERRO ENVIADO POR transferService.Transfer NÃO É NIL")
 		ctx.JSON(errors.ResponseFromError(err), gin.H{
 			"error": err.Error(),
 		})
